@@ -9,7 +9,7 @@ public class Main {
         RegistrationArrayList arr = new RegistrationArrayList();
 
         while (true) {
-            System.out.println("\n=== REGISTRATION ARRAYLIST ===");
+            System.out.println("\n Đăng Ký Học Lại:");
             System.out.println("1. Thêm (add)");
             System.out.println("2. Tìm kiếm (search)");
             System.out.println("3. Bubble Sort (theo tên)");
