@@ -1,4 +1,4 @@
-package DangKyHocLai.LinkedListQUeue;
+package QuanLySinhVien.LinkedListQueue;
 
 public class Node {
     public Student data;
@@ -9,4 +9,3 @@ public class Node {
         this.next = null;
     }
 }
-
