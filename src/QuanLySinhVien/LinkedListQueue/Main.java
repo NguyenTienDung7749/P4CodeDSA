@@ -16,10 +16,10 @@ public class Main {
                 System.out.println("1. Add students (enqueue)");
                 System.out.println("2. Delete the first student (dequeue - FIFO)");
                 System.out.println("3. See first student (peek)");
-                System.out.println("4. Search by ID (Linear Search)");
-                System.out.println("5. Search by ID (Binary Search)");
-                    System.out.println("6. Bubble Sort (by name)");
-                System.out.println("7. Quick Sort (in descending order of grade)");
+                System.out.println("4. Jump Search by ID");
+                System.out.println("5. Interpolation Search by ID");
+                System.out.println("6. Selection Sort (by name)");
+                System.out.println("7. Merge Sort (in descending order of grade)");
                 System.out.println("8. Show list");
                 System.out.println("0. Exit");
                 System.out.print("Select: ");
@@ -32,9 +32,19 @@ public class Main {
                     case 1:
                         System.out.print("ID: ");
                         String id = sc.nextLine();
+                        
+                        // Check for empty ID
+                        if (id.trim().isEmpty()) {
+                            throw new IllegalArgumentException("ID cannot be blank!");
+                        }
 
                         System.out.print("Name: ");
                         String name = sc.nextLine();
+                        
+                        // Check for null name
+                        if (name == null) {
+                            throw new NullPointerException("Name cannot be null!");
+                        }
 
                         System.out.print("Grade (0 - 10): ");
                         String markStr = sc.nextLine();
@@ -58,7 +68,7 @@ public class Main {
                         break;
 
                     case 4:
-                        System.out.print("Enter the ID you want to find (Linear Search):");
+                        System.out.print("Enter the ID you want to find (Jump Search): ");
                         String searchID = sc.nextLine();
 
                         // LỖI 2 ID rỗng ( không nhập gì)
@@ -69,12 +79,12 @@ public class Main {
                         // LỖI 3: ID không phải số → NumberFormatException
                         Integer.parseInt(searchID);
 
-                        Student found = queue.search(searchID);
+                        Student found = queue.jumpSearchById(searchID);
                         System.out.println(found == null ? "Not found." : found);
                         break;
 
                     case 5:
-                        System.out.print("Enter the ID you want to find (Binary Search): ");
+                        System.out.print("Enter the ID you want to find (Interpolation Search): ");
                         String searchID2 = sc.nextLine();
 
                         if (searchID2.trim().isEmpty()) {
@@ -83,16 +93,16 @@ public class Main {
 
                         Integer.parseInt(searchID2); // tạo NumberFormatException nếu nhập chữ
 
-                        Student found2 = queue.binarySearchById(searchID2);
+                        Student found2 = queue.interpolationSearchById(searchID2);
                         System.out.println(found2 == null ? "Not found." : found2);
                         break;
 
                     case 6:
-                        queue.bubbleSortByName();
+                        queue.selectionSortByName();
                         break;
 
                     case 7:
-                        queue.quickSortByMarkDesc();
+                        queue.mergeSortByMarkDesc();
                         break;
 
                     case 8:
@@ -123,6 +133,16 @@ public class Main {
             // LỖI 2A: ID rỗng
             catch (IllegalArgumentException e) {
                 System.out.println("Error: " + e.getMessage());
+            }
+
+            // LỖI MỚI 1: ArrayIndexOutOfBoundsException
+            catch (ArrayIndexOutOfBoundsException e) {
+                System.out.println("Error: Invalid index access - " + e.getMessage());
+            }
+
+            // LỖI MỚI 2: NullPointerException
+            catch (NullPointerException e) {
+                System.out.println("Error: Null object reference - " + e.getMessage());
             }
 
             // Lỗi khác

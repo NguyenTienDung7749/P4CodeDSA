@@ -50,31 +50,30 @@ public class RegistrationQueue {
         }
     }
 
-    // ================== SORT 1: Bubble Sort theo tên ==================
-    public void bubbleSortByName() {
+    // ================== SORT 1: Selection Sort by name ==================
+    public void selectionSortByName() {
         if (head == null) return;
 
-        boolean swapped;
-        do {
-            swapped = false;
-            Node current = head;
-
-            while (current.next != null) {
-                if (current.data.getName()
-                        .compareToIgnoreCase(current.next.data.getName()) > 0) {
-
-                    // swap data
-                    Student temp = current.data;
-                    current.data = current.next.data;
-                    current.next.data = temp;
-
-                    swapped = true;
+        int n = getSize();
+        Student[] a = toArray();
+        
+        for (int i = 0; i < n - 1; i++) {
+            int minIndex = i;
+            for (int j = i + 1; j < n; j++) {
+                if (a[j].getName().compareToIgnoreCase(a[minIndex].getName()) < 0) {
+                    minIndex = j;
                 }
-                current = current.next;
             }
-        } while (swapped);
-
-        System.out.println("Results after using Bubble Sort (by name):");
+            // Swap minimum element with first element of unsorted part
+            if (minIndex != i) {
+                Student temp = a[i];
+                a[i] = a[minIndex];
+                a[minIndex] = temp;
+            }
+        }
+        
+        fromArray(a);
+        System.out.println("Results after using Selection Sort (by name):");
         display();
     }
 
@@ -108,97 +107,203 @@ public class RegistrationQueue {
         }
     }
 
-    // SORT 2: Quick Sort theo điểm (giảm dần)
-    public void quickSortByMarkDesc() {
+    // SORT 2: Merge Sort by mark (descending)
+    public void mergeSortByMarkDesc() {
         int n = getSize();
         if (n <= 1) return;
 
         Student[] a = toArray();
-        quickSortByMark(a, 0, n - 1);
+        Student[] temp = new Student[n];
+        mergeSortByMark(a, temp, 0, n - 1);
         fromArray(a);
 
-        System.out.println("Results after using Quick Sort (in descending order):");
+        System.out.println("Results after using Merge Sort (in descending order of grade):");
         display();
     }
 
-    private void quickSortByMark(Student[] a, int low, int high) {
-        if (low < high) {
-            int p = partitionMarkDesc(a, low, high);
-            quickSortByMark(a, low, p - 1);
-            quickSortByMark(a, p + 1, high);
+    private void mergeSortByMark(Student[] a, Student[] temp, int left, int right) {
+        if (left < right) {
+            int mid = (left + right) / 2;
+            mergeSortByMark(a, temp, left, mid);
+            mergeSortByMark(a, temp, mid + 1, right);
+            mergeByMark(a, temp, left, mid, right);
         }
     }
 
-    private int partitionMarkDesc(Student[] a, int low, int high) {
-        Student pivot = a[high];
-        int i = low - 1;
-        for (int j = low; j < high; j++) {
-            if (a[j].getMark() > pivot.getMark()) { // giảm dần
+    private void mergeByMark(Student[] a, Student[] temp, int left, int mid, int right) {
+        // Copy to temp array
+        for (int i = left; i <= right; i++) {
+            temp[i] = a[i];
+        }
+
+        int i = left;
+        int j = mid + 1;
+        int k = left;
+
+        // Merge back to original array (descending order by mark)
+        while (i <= mid && j <= right) {
+            if (temp[i].getMark() >= temp[j].getMark()) {
+                a[k] = temp[i];
                 i++;
-                Student tmp = a[i];
-                a[i] = a[j];
-                a[j] = tmp;
+            } else {
+                a[k] = temp[j];
+                j++;
             }
+            k++;
         }
-        Student tmp = a[i + 1];
-        a[i + 1] = a[high];
-        a[high] = tmp;
-        return i + 1;
+
+        // Copy remaining elements from left half
+        while (i <= mid) {
+            a[k] = temp[i];
+            i++;
+            k++;
+        }
     }
 
-    // SEARCH 1: Linear Search theo ID
-    public Student search(String id) {
-        Node current = head;
-        while (current != null) {
-            if (current.data.getId().equals(id)) return current.data;
-            current = current.next;
-        }
-        return null;
-    }
-
-    // SEARCH 2: Binary Search theo ID
-    // Lưu ý: dùng mảng phụ, sort theo ID rồi binary search trên mảng.
-    public Student binarySearchById(String id) {
+    // SEARCH 1: Jump Search by ID
+    // Requires sorted array - jumps in blocks of √n, then linear search within block
+    public Student jumpSearchById(String id) {
         int n = getSize();
         if (n == 0) return null;
 
         Student[] a = toArray();
-        quickSortByIdAsc(a, 0, n - 1); // sort theo ID trước
+        mergeSortByIdAsc(a);  // Sort by ID first
 
-        int left = 0, right = n - 1;
-        while (left <= right) {
-            int mid = (left + right) / 2;
-            int cmp = a[mid].getId().compareToIgnoreCase(id);
-            if (cmp == 0) return a[mid];
-            else if (cmp < 0) left = mid + 1;
-            else right = mid - 1;
+        int step = (int) Math.floor(Math.sqrt(n));
+        int prev = 0;
+
+        // Jump ahead until we find a block where the ID might be
+        while (prev < n && a[Math.min(step, n) - 1].getId().compareToIgnoreCase(id) < 0) {
+            prev = step;
+            step += (int) Math.floor(Math.sqrt(n));
+            if (prev >= n) return null;
         }
+
+        // Linear search within the block
+        while (prev < Math.min(step, n)) {
+            if (a[prev].getId().compareToIgnoreCase(id) == 0) {
+                return a[prev];
+            }
+            prev++;
+        }
+
         return null;
     }
 
-    // Quick sort theo ID tăng dần (phục vụ binary search)
-    private void quickSortByIdAsc(Student[] a, int low, int high) {
-        if (low < high) {
-            int p = partitionIdAsc(a, low, high);
-            quickSortByIdAsc(a, low, p - 1);
-            quickSortByIdAsc(a, p + 1, high);
+    // SEARCH 2: Interpolation Search by ID
+    // Uses value-based estimation for position
+    public Student interpolationSearchById(String id) {
+        int n = getSize();
+        if (n == 0) return null;
+
+        Student[] a = toArray();
+        mergeSortByIdAsc(a);  // Sort by ID first
+
+        int low = 0;
+        int high = n - 1;
+
+        while (low <= high &&
+               a[low].getId().compareToIgnoreCase(id) <= 0 &&
+               a[high].getId().compareToIgnoreCase(id) >= 0) {
+
+            if (low == high) {
+                if (a[low].getId().compareToIgnoreCase(id) == 0) {
+                    return a[low];
+                }
+                return null;
+            }
+
+            // Calculate interpolated position based on ID numeric values
+            int lowIdVal = getNumericValue(a[low].getId());
+            int highIdVal = getNumericValue(a[high].getId());
+            int targetVal = getNumericValue(id);
+
+            // Avoid division by zero
+            if (highIdVal == lowIdVal) {
+                if (a[low].getId().compareToIgnoreCase(id) == 0) {
+                    return a[low];
+                }
+                return null;
+            }
+
+            int pos = low + (((targetVal - lowIdVal) * (high - low)) / (highIdVal - lowIdVal));
+
+            // Ensure pos is within bounds
+            if (pos < low) pos = low;
+            if (pos > high) pos = high;
+
+            int cmp = a[pos].getId().compareToIgnoreCase(id);
+
+            if (cmp == 0) {
+                return a[pos];
+            } else if (cmp < 0) {
+                low = pos + 1;
+            } else {
+                high = pos - 1;
+            }
+        }
+
+        return null;
+    }
+
+    // Helper method to convert ID string to numeric value for interpolation
+    private int getNumericValue(String id) {
+        try {
+            return Integer.parseInt(id);
+        } catch (NumberFormatException e) {
+            // If not a number, use hash-based value
+            int hash = 0;
+            for (char c : id.toLowerCase().toCharArray()) {
+                hash = hash * 31 + c;
+            }
+            return Math.abs(hash);
         }
     }
 
-    private int partitionIdAsc(Student[] a, int low, int high) {
-        Student pivot = a[high];
-        int i = low - 1;
-        for (int j = low; j < high; j++) {
-            if (a[j].getId().compareToIgnoreCase(pivot.getId()) < 0) {
-                i++;
-                Student tmp = a[i];
-                a[i] = a[j];
-                a[j] = tmp;
-            }
+    // Merge sort by ID ascending (for search operations)
+    private void mergeSortByIdAsc(Student[] a) {
+        int n = a.length;
+        if (n <= 1) return;
+        Student[] temp = new Student[n];
+        mergeSortById(a, temp, 0, n - 1);
+    }
+
+    private void mergeSortById(Student[] a, Student[] temp, int left, int right) {
+        if (left < right) {
+            int mid = (left + right) / 2;
+            mergeSortById(a, temp, left, mid);
+            mergeSortById(a, temp, mid + 1, right);
+            mergeById(a, temp, left, mid, right);
         }
-        Student tmp = a[i + 1];
-        a[i + 1] = a[high];
-        a[high] = tmp;
-        return i + 1;
+    }
+
+    private void mergeById(Student[] a, Student[] temp, int left, int mid, int right) {
+        // Copy to temp array
+        for (int i = left; i <= right; i++) {
+            temp[i] = a[i];
+        }
+
+        int i = left;
+        int j = mid + 1;
+        int k = left;
+
+        // Merge back to original array (ascending order by ID)
+        while (i <= mid && j <= right) {
+            if (temp[i].getId().compareToIgnoreCase(temp[j].getId()) <= 0) {
+                a[k] = temp[i];
+                i++;
+            } else {
+                a[k] = temp[j];
+                j++;
+            }
+            k++;
+        }
+
+        // Copy remaining elements from left half
+        while (i <= mid) {
+            a[k] = temp[i];
+            i++;
+            k++;
+        }
     }
 }
