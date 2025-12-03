@@ -63,8 +63,8 @@ public class RegistrationStack {
     public Student jumpSearchById(String id) {
         if (size == 0) return null;
         
-        // Sort first for jump search to work
-        mergeSortByIdAsc();
+        // Sort first for jump search to work (internal method without display)
+        mergeSortByIdInternal();
         
         int step = (int) Math.floor(Math.sqrt(size));
         int prev = 0;
@@ -92,8 +92,8 @@ public class RegistrationStack {
     public Student interpolationSearchById(String id) {
         if (size == 0) return null;
         
-        // Sort first for interpolation search to work
-        mergeSortByIdAsc();
+        // Sort first for interpolation search to work (internal method without display)
+        mergeSortByIdInternal();
         
         int low = 0;
         int high = size - 1;
